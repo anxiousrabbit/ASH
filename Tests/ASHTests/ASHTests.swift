@@ -6,7 +6,7 @@ final class ASHTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        XCTAssertEqual(ASH().text, "Hello, World!")
+//        XCTAssertEqual(ASH.commandFunc(command: "ls;"))
     }
 
     static var allTests = [
