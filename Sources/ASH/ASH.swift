@@ -21,6 +21,7 @@ public struct ASH {
                     commandResult = commandResult + " " + path
                     for indFile in listPath {
                         print(indFile)
+                        
                     }
                 }
                 catch {
