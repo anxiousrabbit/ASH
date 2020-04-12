@@ -78,7 +78,7 @@ public struct ASH {
                     return
                 }
             case ("ps;"):
-                //Will list all processes
+                //Will list all processes 
                 var commandResult = "ps;\n"
                 for application in NSWorkspace.shared.runningApplications {
                     commandResult = commandResult + "\n" + String(application.localizedName!)
