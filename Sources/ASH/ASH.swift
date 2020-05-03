@@ -15,6 +15,15 @@ public struct ASH {
                 return ["inCommand":inCommand, "returnType":returnType, "returnData":returnData]
             }
         }
+        struct returnDataRaw {
+            var inCommand: String
+            var returnType: String
+            var fileName: String
+            var returnData: Any
+            var returnDict: [String: Any] {
+                return ["inCommand":inCommand, "returnType":returnType, "fileName":fileName, "returnData":returnData]
+            }
+        }
         let fileManager = FileManager.default
         func directoryPath(command:String) -> String {
             let path = fileManager.currentDirectoryPath
@@ -145,35 +154,28 @@ public struct ASH {
                 //Gets overall displays
                 //Some bugs exist with this command
                 //This will notify the user requesting permission to take pictures on 10.15+
-                let path = command.components(separatedBy: "; ")[safe: 1]
-                if path != nil {
-                    var displayCount: UInt32 = 0
-                    var displayList = CGGetActiveDisplayList(0, nil, &displayCount)
+                //CONVERT TO RAW
+//                let path = command.components(separatedBy: "; ")[safe: 1]
+                var displayCount: UInt32 = 0
+                var displayList = CGGetActiveDisplayList(0, nil, &displayCount)
+                if (displayList == CGError.success) {
+                    //Places all the displays into an object
+                    let capacity = Int(displayCount)
+                    let activeDisplay = UnsafeMutablePointer<CGDirectDisplayID>.allocate(capacity: capacity)
+                    displayList = CGGetActiveDisplayList(displayCount, activeDisplay, &displayCount)
                     if (displayList == CGError.success) {
-                        //Places all the displays into an object
-                        let capacity = Int(displayCount)
-                        let activeDisplay = UnsafeMutablePointer<CGDirectDisplayID>.allocate(capacity: capacity)
-                        displayList = CGGetActiveDisplayList(displayCount, activeDisplay, &displayCount)
-                        if (displayList == CGError.success) {
-                            for singleDisplay in 1...displayCount {
-                                let screenshotTime = Date().timeIntervalSince1970
-                                let fullPath = path! + String(screenshotTime) + "_" + String(singleDisplay)
-                                let filePath = URL(fileURLWithPath: fullPath + ".jpg")
-                                let screenshot:CGImage = CGDisplayCreateImage(activeDisplay[Int(singleDisplay-1)])!
-                                let bitmap = NSBitmapImageRep(cgImage: screenshot)
-                                let screenshotData = bitmap.representation(using: .jpeg, properties: [:])!
-                                do {
-                                    try screenshotData.write(to: filePath, options: .atomic)
-                                    return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: String(progCallSplit) + " successful").returnDict as NSDictionary
-                                    
-                                }
-                                catch {
-                                    return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
-                                }
-                            }
+                        for singleDisplay in 1...displayCount {
+                            let screenshotTime = Date().timeIntervalSince1970
+//                                let fullPath = path! + String(screenshotTime) + "_" + String(singleDisplay)
+//                                let filePath = URL(fileURLWithPath: fullPath + ".jpg")
+                            let screenshot:CGImage = CGDisplayCreateImage(activeDisplay[Int(singleDisplay-1)])!
+                            let bitmap = NSBitmapImageRep(cgImage: screenshot)
+                            let screenshotData = bitmap.representation(using: .jpeg, properties: [:])!
+                            return returnDataRaw(inCommand: String(progCallSplit), returnType: "Image", fileName: String(screenshotTime) + ".jpg", returnData: screenshotData).returnDict as NSDictionary
                         }
                     }
                 }
+                
 //            case ("osascript;"):
 //                let commandSplit = command.components(separatedBy: "; ")[safe: 1]
 //                if commandSplit != nil {
