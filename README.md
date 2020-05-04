@@ -21,8 +21,11 @@ After ASH is imported into the project, you can call the package using the follo
 
 ## Library Results
 All results from this library will be returned in a dictionary that will contain the command passed, the type of the results, and the results themselves. With commands that involve raw data being returned, the filename will be passed as well with the data. The dictionary looks like:
+
 `["inCommand":inCommand, "returnType":returnType, "returnData":returnData]`
+
 or
+
 `["inCommand":inCommand, "returnType":returnType, "fileName":fileName, "returnData":returnData]`
 
 ## Manpage
