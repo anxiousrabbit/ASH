@@ -54,9 +54,8 @@ public struct ASH {
             case ("ls;"):
                 let path = fileManager.currentDirectoryPath
                 do {
-                    var commandResult = "ls;\n"
                     let listPath = try fileManager.contentsOfDirectory(atPath: path)
-                    commandResult = commandResult + " " + path + "\n"
+                    var commandResult = path + "\n"
                     for indFile in listPath {
                         commandResult = commandResult + indFile + "\n"
                     }
@@ -69,17 +68,18 @@ public struct ASH {
                 //Changes directory
                 let directory = filePath(command: command)
                 fileManager.changeCurrentDirectoryPath(directory)
-                return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: command).returnDict as NSDictionary
+                return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: directory).returnDict as NSDictionary
             case ("cdr;"):
                 //Go to the relative folder in this directory
                 let fullDirectory = directoryPath(command: command)
                 fileManager.changeCurrentDirectoryPath(fullDirectory)
                 return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: fullDirectory).returnDict as NSDictionary
             case ("mkdir;"):
-                let fullDirectory = URL(fileURLWithPath: directoryPath(command: command))
+                let fullDirectory = directoryPath(command: command)
+                let fullDirectoryUrl = URL(fileURLWithPath: fullDirectory)
                 do {
-                    try fileManager.createDirectory(at: fullDirectory, withIntermediateDirectories: false, attributes: nil)
-                    return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: command + " successful").returnDict as NSDictionary
+                    try fileManager.createDirectory(at: fullDirectoryUrl, withIntermediateDirectories: false, attributes: nil)
+                    return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: fullDirectory).returnDict as NSDictionary
                 }
                 catch {
                     return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
