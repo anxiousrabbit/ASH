@@ -90,17 +90,18 @@ public struct ASH {
                 return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: username).returnDict as NSDictionary
             case ("rm;"):
                 //Delete a file
-                let fullDirectory = URL(fileURLWithPath: directoryPath(command: command))
+                let fullDirectory = directoryPath(command: command)
+                let fullDirectoryUrl = URL(fileURLWithPath: fullDirectory)
                 do {
-                    try fileManager.removeItem(at: fullDirectory)
-                    return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: command + " successful").returnDict as NSDictionary
+                    try fileManager.removeItem(at: fullDirectoryUrl)
+                    return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: fullDirectory).returnDict as NSDictionary
                 }
                 catch {
                     return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
                 }
             case ("ps;"):
                 //Will list all processes
-                var commandResult = "ps;\n"
+                var commandResult = ""
                 for application in NSWorkspace.shared.runningApplications {
                     commandResult = commandResult + "\n" + String(application.localizedName!)
                 }
@@ -126,7 +127,7 @@ public struct ASH {
                         do {
                             try fileManager.copyItem(atPath: String(origDir!), toPath: String(destDir!))
                             try fileManager.removeItem(at: origDirUrl)
-                            return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: String(progCallSplit) + " " + origDir! + " to " + destDir! + " successful").returnDict as NSDictionary
+                            return returnData(inCommand: String(progCallSplit), returnType: "String", returnData:origDir! + " > " + destDir!).returnDict as NSDictionary
                         }
                         catch {
                             return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
@@ -143,7 +144,7 @@ public struct ASH {
                     if origDir != nil && destDir != nil {
                         do {
                             try fileManager.copyItem(atPath: String(origDir!), toPath: String(destDir!))
-                            return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: String(progCallSplit) + " " + origDir! + " to " + destDir! + " successful").returnDict as NSDictionary
+                            return returnData(inCommand: String(progCallSplit), returnType: "String", returnData:origDir! + " > " + destDir!).returnDict as NSDictionary
                         }
                         catch {
                             return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
@@ -181,7 +182,7 @@ public struct ASH {
                     var scriptErr: NSDictionary?
                     scriptOutput.executeAndReturnError(&scriptErr)
                     if scriptErr is NSNull {
-                        return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: scriptErr).returnDict as NSDictionary
+                        return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: source).returnDict as NSDictionary
                     }
                     else {
                         return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: scriptErr).returnDict as NSDictionary
