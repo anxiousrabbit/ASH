@@ -181,7 +181,7 @@ public struct ASH {
                     let scriptOutput = NSAppleScript(source: source)!
                     var scriptErr: NSDictionary?
                     scriptOutput.executeAndReturnError(&scriptErr)
-                    if scriptErr is NSNull {
+                    if scriptErr == nil {
                         return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: source).returnDict as NSDictionary
                     }
                     else {
