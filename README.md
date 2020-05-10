@@ -8,6 +8,8 @@ The goal of open sourcing this shell is to help build detection around API actio
 
 I do plan to add more functions to ASH over time and rework some of the code.
 
+I did not test this on Linux; however, I did not limit the system requirements for those who want to see if this shell also works on Linux.
+
 ## Installation
 I have tested this solely on macOS (I don't know how Linux support is but I would love to hear about it). I have also primarily used this using Xcode's built in package manager: I have not tested this package with third party package managers. Instructions on how to use Xcode's package manager can be found at the link below.
 
@@ -52,8 +54,14 @@ screenshot; Destination --- Take a snapshot of all screens. This will notify the
 osascript; Code --- This will run an Apple script.
   
 execute; App to Run --- This will execute a payload as an API call (no shell needed). Sometimes this works better if you're already in the directory of the payload.
+
+## Contributions
+If there's a shell item that you would like to add, feel free to fork the project and submit a pull request. Some requirements:
+* Command returns should follow the `returnData` struct. If binary data is returned, follow `returnDataRaw`. 
+* The command must use an API.
   
 #### Bugs
 The following bugs are known:
-* Snapshot needs a code rewrite for efficiency
+* Screenshots don't cycle through virtual desktops.
 * cd doesn't work as a ksh command; however, the ASH version works the same.
+* Execute is currently commented out. It's using a deprecated call that I want to find a better solution for.
