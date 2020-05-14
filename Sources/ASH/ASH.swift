@@ -134,6 +134,15 @@ public struct ASH {
                         }
                     }
                 }
+            case ("strings;"):
+                let file = URL(fileURLWithPath: directoryPath(command: command))
+                do {
+                    let fileResults = try String(contentsOf: file, encoding: .ascii)
+                    return returnData(inCommand: String(progCallSplit), returnType: "String", returnData:fileResults).returnDict as NSDictionary
+                }
+                catch {
+                    return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
+                }
             case ("cp;"):
                 //Copy a file
                 let commandSplit = command.components(separatedBy: "; ")[safe: 1]
