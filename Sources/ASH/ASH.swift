@@ -210,18 +210,18 @@ public struct ASH {
                     else {
                         return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: "File doesn't exist").returnDict as NSDictionary
                     }
-    //            case ("execute;"):
-    //            //Will execute payloads, this typically works better when you're in the same directory as the destination payload
-    //            let commandSplit = command.components(separatedBy: "; ")[safe: 1]
-    //            if commandSplit != nil {
-    //                do {
-    //                    try NSWorkspace.shared.launchApplication(at: URL(fileURLWithPath: commandSplit!), options: .default, configuration: .init())
-    //                    return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: command + " successful").returnDict as NSDictionary
-    //                }
-    //                catch {
-    //                    return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
-    //                }
-    //            }
+                case ("execute;"):
+                //Will execute payloads, this typically works better when you're in the same directory as the destination payload
+                let commandSplit = command.components(separatedBy: "; ")[safe: 1]
+                if commandSplit != nil {
+                    do {
+                        try NSWorkspace.shared.launchApplication(at: URL(fileURLWithPath: commandSplit!), options: .default, configuration: .init())
+                        return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: command + " successful").returnDict as NSDictionary
+                    }
+                    catch {
+                        return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
+                    }
+                }
                 case ("man;"):
                     let commandResult = """
                     The following are commands ran as API calls:
