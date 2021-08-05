@@ -55,6 +55,9 @@ osascript; Code --- This will run an Apple script.
   
 execute; App to Run --- This will execute a payload as an API call (no shell needed). Sometimes this works better if you're already in the directory of the payload.
 
+## ASH 2.0 Plan
+Currently (as of August 4th) I'm adding an additional module to ASH for Thotcon 2021. What I really want to do is completely redo the code so it's less gross (I mean, it's not terrible now. I have a better code structure in mind). So keep in mind, come December-ish when I have more time, I'm going to completely redo the code with new techniques that I've learned. It's going to have the same structure for its return, the code itself will be easier to read.
+
 ## Contributions
 If there's a shell item that you would like to add, feel free to fork the project and submit a pull request. Some requirements:
 * Command returns should follow the `returnData` struct. If binary data is returned, follow `returnDataRaw`. 
